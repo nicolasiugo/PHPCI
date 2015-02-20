@@ -10,6 +10,7 @@
 namespace PHPCI\Model\Build;
 
 use PHPCI\Builder;
+use PHPCI\Helper\Github;
 use PHPCI\Model\Build\RemoteGitBuild;
 
 /**
@@ -166,5 +167,23 @@ class GithubBuild extends RemoteGitBuild
         }
 
         return $success;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reportError($file, $line, $message)
+    {
+        $buildType = $this->getExtra('build_type');
+
+        var_dump($buildType);
+
+        if (!empty($buildType) && $buildType == 'pull_request') {
+            $helper = new Github();
+
+            $repo = $this->getProject()->getReference();
+            $pull = $this->getExtra('pull_request_number');
+            $helper->createPullRequestComment($repo, $pull, $this->getCommitId(), $file, $line, $message);
+        }
     }
 }

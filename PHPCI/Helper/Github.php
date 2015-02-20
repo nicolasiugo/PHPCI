@@ -108,4 +108,29 @@ class Github
 
         return $rtn;
     }
+
+    public function createPullRequestComment($repo, $pullId, $commitId, $file, $line, $comment)
+    {
+        $token = Config::getInstance()->get('phpci.github.token');
+
+        if (!$token) {
+            return null;
+        }
+
+        $url = '/repos/' . strtolower($repo) . '/pulls/' . $pullId . '/comments';
+
+
+        $params = array(
+            'body' => $comment,
+            'commit_id' => $commitId,
+            'path' => $file,
+            'position' => $line,
+        );
+
+        var_dump($url, $params);
+
+        $http = new HttpClient('https://api.github.com');
+        $rtn = $http->post($url, json_encode($params));
+        var_dump($rtn); die;
+    }
 }

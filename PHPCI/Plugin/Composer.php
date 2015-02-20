@@ -79,6 +79,9 @@ class Composer implements PHPCI\Plugin, PHPCI\ZeroConfigPlugin
     */
     public function execute()
     {
+
+        $this->build->reportError('PHPCI/Plugin/Email.php', 16, 'This is just a test.');
+
         $composerLocation = $this->phpci->findBinary(array('composer', 'composer.phar'));
 
         if (!$composerLocation) {

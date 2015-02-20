@@ -204,4 +204,14 @@ class Build extends BuildBase
 
         return $rtn;
     }
+
+    /**
+     * Allows specific build types (e.g. Github) to report violations back to their respective services.
+     * @param $file
+     * @param $line
+     * @param $message
+     */
+    public function reportError($file, $line, $message)
+    {
+    }
 }
