@@ -211,7 +211,7 @@ class Build extends BuildBase
      * @param $line
      * @param $message
      */
-    public function reportError($file, $line, $message)
+    public function reportError(Builder $builder, $file, $line, $message)
     {
     }
 }

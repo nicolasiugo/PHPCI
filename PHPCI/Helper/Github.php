@@ -119,7 +119,6 @@ class Github
 
         $url = '/repos/' . strtolower($repo) . '/pulls/' . $pullId . '/comments';
 
-
         $params = array(
             'body' => $comment,
             'commit_id' => $commitId,
@@ -127,10 +126,12 @@ class Github
             'position' => $line,
         );
 
-        var_dump($url, $params);
-
         $http = new HttpClient('https://api.github.com');
+        $http->setHeaders(array(
+            'Content-Type: application/x-www-form-urlencoded',
+            'Authorization: Basic ' . base64_encode($token . ':x-oauth-basic'),
+        ));
+
         $rtn = $http->post($url, json_encode($params));
-        var_dump($rtn); die;
     }
 }

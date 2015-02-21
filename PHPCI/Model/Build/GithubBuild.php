@@ -12,6 +12,7 @@ namespace PHPCI\Model\Build;
 use PHPCI\Builder;
 use PHPCI\Helper\Github;
 use PHPCI\Model\Build\RemoteGitBuild;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
 * Github Build Model
@@ -172,18 +173,40 @@ class GithubBuild extends RemoteGitBuild
     /**
      * @inheritDoc
      */
-    public function reportError($file, $line, $message)
+    public function reportError(Builder $builder, $file, $line, $message)
     {
-        $buildType = $this->getExtra('build_type');
+        $builder->executeCommand('cd %s && git diff origin/%s "%s"', $builder->buildPath, $this->getBranch(), $file);
 
-        var_dump($buildType);
+        $fileLines = file($builder->buildPath . $file);
+        $errorLine = $fileLines[$line - 1];
+
+        $diff = $builder->getLastOutput();
+
+        $diffLines = explode(PHP_EOL, $diff);
+        $diffLineNumber = -5; // Start at minus five so that our line number starts after the diff header.
+        $foundLine = false;
+
+        foreach ($diffLines as $diffLine) {
+            $diffLineNumber++;
+
+            if (substr($diffLine, 0, 1) == '+' && trim(substr($diffLine, 1)) == trim($errorLine)) {
+                $foundLine = true;
+                break;
+            }
+        }
+
+        if (!$foundLine) {
+            return;
+        }
+
+        $buildType = $this->getExtra('build_type');
 
         if (!empty($buildType) && $buildType == 'pull_request') {
             $helper = new Github();
 
             $repo = $this->getProject()->getReference();
             $pull = $this->getExtra('pull_request_number');
-            $helper->createPullRequestComment($repo, $pull, $this->getCommitId(), $file, $line, $message);
+            $helper->createPullRequestComment($repo, $pull, $this->getCommitId(), $file, $diffLineNumber, $message);
         }
     }
 }
